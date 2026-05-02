@@ -105,9 +105,8 @@ InitTestScene*.unity*
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
 
-# Claude Code 작업 파일 (사적 명령 텍스트)
-g3_1b_command.txt
-g3_2_command.txt
+# Claude Code 작업 파일 (사적 명령 텍스트, 모든 phase·작업)
+*_command.txt
 
 # 압축 파일 (프로젝트 외부 백업)
 FR5_Controller_NEW.zip
