@@ -57,7 +57,7 @@ namespace RobotControl.EditorTools
             Debug.Log("[SceneSetup] 단계 4 완료: MainCanvas (Canvas + CanvasScaler + GraphicRaycaster)");
 
             // 단계 5: EventSystem
-            EventSystem existingES = Object.FindObjectOfType<EventSystem>();
+            EventSystem existingES = Object.FindAnyObjectByType<EventSystem>();
             if (existingES == null)
             {
                 GameObject esGO = new GameObject("EventSystem");
