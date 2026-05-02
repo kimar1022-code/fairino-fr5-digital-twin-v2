@@ -660,6 +660,7 @@ GameObject:
   - component: {fileID: 320301141}
   - component: {fileID: 320301140}
   - component: {fileID: 320301139}
+  - component: {fileID: 320301142}
   m_Layer: 0
   m_Name: fairino5_v6_robot
   m_TagString: robot
@@ -722,6 +723,72 @@ Transform:
   - {fileID: 564235659}
   m_Father: {fileID: 1038380862}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &320301142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 320301138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f313822391a9f7b4dac52cb395119d0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RobotControl.SimulatedRobotController
+  driveMode: 0
+  joints:
+  - name: J1 (Base)
+    minAngle: -175
+    maxAngle: 175
+    homeAngle: -90
+    jointTransform: {fileID: 1165505915}
+    rotationAxis: {x: 0, y: 0, z: 0}
+    invertSign: 0
+  - name: J2 (Shoulder)
+    minAngle: -265
+    maxAngle: 85
+    homeAngle: -90
+    jointTransform: {fileID: 1721273272}
+    rotationAxis: {x: 0, y: 0, z: 0}
+    invertSign: 0
+  - name: J3 (Elbow)
+    minAngle: -162
+    maxAngle: 162
+    homeAngle: 90
+    jointTransform: {fileID: 1283629475}
+    rotationAxis: {x: 0, y: 0, z: 0}
+    invertSign: 0
+  - name: J4 (Wrist1)
+    minAngle: -265
+    maxAngle: 85
+    homeAngle: -90
+    jointTransform: {fileID: 478575096}
+    rotationAxis: {x: 0, y: 0, z: 0}
+    invertSign: 0
+  - name: J5 (Wrist2)
+    minAngle: -175
+    maxAngle: 175
+    homeAngle: -90
+    jointTransform: {fileID: 461545167}
+    rotationAxis: {x: 0, y: 0, z: 0}
+    invertSign: 0
+  - name: J6 (Wrist3)
+    minAngle: -175
+    maxAngle: 175
+    homeAngle: 0
+    jointTransform: {fileID: 1962454354}
+    rotationAxis: {x: 0, y: 0, z: 0}
+    invertSign: 0
+  stiffness: 10000
+  damping: 1000
+  forceLimit: 1000
+  transformSmoothSpeed: 180
+  gripper: {fileID: 0}
+  tcpTransform: {fileID: 486077195}
+  jogLinearSpeed: 50
+  jogAngularSpeed: 15
+  ikDamping: 0.1
+  ikMaxIterations: 8
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -903,8 +970,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfae27a364fc70245900354a5011545a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RobotControl.WaypointRecorder
-  buttonHandler: {fileID: 0}
-  robot: {fileID: 0}
+  buttonHandler: {fileID: 1143081045}
+  robot: {fileID: 1465607953}
   namePrefix: WP
   enableLog: 1
   defaultGripperSpeed: 50
@@ -2215,6 +2282,59 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Robotics.UrdfImporter::Unity.Robotics.UrdfImporter.UrdfVisual
   geometryType: 3
+--- !u!1 &1143081044
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1143081046}
+  - component: {fileID: 1143081045}
+  m_Layer: 0
+  m_Name: PLCButtons
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1143081045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1143081044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 497bcdba10f52e94e84a121684fd3722, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RobotControl.PLCButtonHandler
+  fairino: {fileID: 0}
+  pinGoHome: 0
+  pinRecordStart: 1
+  pinRecordStop: 2
+  pinSaveWaypoint: 8
+  pinPlay: 9
+  pinStop: 10
+  pollInterval: 0.05
+  enableDebugLog: 1
+--- !u!4 &1143081046
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1143081044}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1164196183
 GameObject:
   m_ObjectHideFlags: 0
@@ -2878,8 +2998,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cea26c35324f4d747b06060d9b64e6d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RobotControl.WaypointPlayer
-  robotManager: {fileID: 0}
-  waypointRecorder: {fileID: 0}
+  robotManager: {fileID: 1465607953}
+  waypointRecorder: {fileID: 407597203}
   toleranceDeg: 0.5
   loopMode: 0
   enableLog: 1
@@ -3071,6 +3191,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1465607952}
   - component: {fileID: 1465607953}
+  - component: {fileID: 1465607954}
   m_Layer: 0
   m_Name: RobotManager
   m_TagString: Untagged
@@ -3107,8 +3228,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RobotControl.RobotManager
   mode: 0
   autoConnectReal: 0
-  sim: {fileID: 0}
-  real: {fileID: 0}
+  sim: {fileID: 320301142}
+  real: {fileID: 1465607954}
+--- !u!114 &1465607954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465607951}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65af5753e2361f44ab0a845e88601cd1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RobotControl.FairinoRobotController
+  robotIP: 192.168.58.2
+  commandRate: 20
+  stateReadRate: 10
+  moveJVel: 20
+  moveJAcc: 30
+  moveJOvl: 50
+  blendT: 50
+  jogVel: 30
+  jogAcc: 30
+  jogMaxDis: 180
+  joints: []
+  gripperCompany: 4
+  gripperDevice: 0
+  gripperSoftver: 1
+  gripperBus: 1
+  gripperIndex: 1
+  gripperType: 0
 --- !u!1001 &1476081786
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3999,7 +4149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 659b345f6cd43d143b3706e85af87d89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RobotControl.WaypointStorage
-  recorder: {fileID: 0}
+  recorder: {fileID: 407597203}
   fileName: waypoints.json
   folderName: Waypoints
   autoLoadOnStart: 1
@@ -4140,10 +4290,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8986bddc1d832e4a97f60f0f551d527, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RobotControl.TeachModeManager
-  buttonHandler: {fileID: 0}
-  robotManager: {fileID: 0}
-  waypointRecorder: {fileID: 0}
-  waypointPlayer: {fileID: 0}
+  buttonHandler: {fileID: 1143081045}
+  robotManager: {fileID: 1465607953}
+  waypointRecorder: {fileID: 407597203}
+  waypointPlayer: {fileID: 1375275911}
   enableLog: 1
 --- !u!1 &1900317884
 GameObject:
@@ -4890,3 +5040,4 @@ SceneRoots:
   - {fileID: 290238292}
   - {fileID: 1038380862}
   - {fileID: 1733063844}
+  - {fileID: 1143081046}
