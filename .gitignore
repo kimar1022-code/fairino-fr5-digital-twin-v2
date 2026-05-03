@@ -110,3 +110,24 @@ InitTestScene*.unity*
 
 # 압축 파일 (프로젝트 외부 백업)
 FR5_Controller_NEW.zip
+
+# Unity auto-generated recovery folder
+/Assets/_Recovery/
+/Assets/_Recovery.meta
+
+# CleanFlatIcon: keep extracted png_128, exclude raw zips and large psd
+# (zips can be re-downloaded from Asset Store)
+/Assets/CleanFlatIcon/png_256.zip
+/Assets/CleanFlatIcon/png_256.zip.meta
+/Assets/CleanFlatIcon/png_512.zip
+/Assets/CleanFlatIcon/png_512.zip.meta
+/Assets/CleanFlatIcon/psd_128/
+/Assets/CleanFlatIcon/psd_128.meta
+/Assets/CleanFlatIcon/psd_256.zip
+/Assets/CleanFlatIcon/psd_256.zip.meta
+/Assets/CleanFlatIcon/psd_512.zip
+/Assets/CleanFlatIcon/psd_512.zip.meta
+
+# CleanFlatIcon 자산 자체는 Asset Store에서 재다운 가능, repo 가볍게 유지
+/Assets/CleanFlatIcon/
+/Assets/CleanFlatIcon.meta
