@@ -26,7 +26,7 @@ namespace RobotControl
         void Update()
         {
             if (robotManager == null || connectionText == null) return;
-            connectionText.text = robotManager.IsConnected ? "🟢 Connected" : "🔴 Disconnected";
+            connectionText.text = robotManager.IsConnected ? "Connected" : "Disconnected";
         }
 
         void UpdateText(string msg)
