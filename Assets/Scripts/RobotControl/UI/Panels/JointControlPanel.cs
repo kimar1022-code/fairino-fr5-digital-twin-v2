@@ -12,6 +12,8 @@ namespace RobotControl
 
         [Header("Step 슬라이더 (±버튼 1회 이동량)")]
         [SerializeField] private Slider stepSlider;
+        [SerializeField] Button stepMinusButton;
+        [SerializeField] Button stepPlusButton;
         [SerializeField] private TMP_Text stepValueText;
 
         [Header("각도 표시 (6개)")]
@@ -38,6 +40,15 @@ namespace RobotControl
             stepSlider.minValue = 1f;
             stepSlider.maxValue = 90f;
             if (stepSlider.value < 1f) stepSlider.value = 30f;
+
+            if (stepMinusButton != null) stepMinusButton.onClick.AddListener(() =>
+            {
+                if (stepSlider != null) stepSlider.value = Mathf.Clamp(stepSlider.value - 1f, 1f, 90f);
+            });
+            if (stepPlusButton != null) stepPlusButton.onClick.AddListener(() =>
+            {
+                if (stepSlider != null) stepSlider.value = Mathf.Clamp(stepSlider.value + 1f, 1f, 90f);
+            });
 
             for (int i = 0; i < jointRows.Length; i++)
             {

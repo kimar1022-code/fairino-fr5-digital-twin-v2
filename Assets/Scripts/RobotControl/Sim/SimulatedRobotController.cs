@@ -154,6 +154,22 @@ namespace RobotControl
 
         void Update()
         {
+            if (driveMode == DriveMode.ArticulationBody && artBodies != null)
+            {
+                for (int i = 0; i < artBodies.Length; i++)
+                {
+                    var ab = artBodies[i];
+                    if (ab == null) continue;
+                    var d = ab.xDrive;
+                    if (d.stiffness < 1f)  // 0으로 리셋된 경우만
+                    {
+                        d.stiffness = stiffness;
+                        d.damping = damping;
+                        d.forceLimit = forceLimit;
+                        ab.xDrive = d;
+                    }
+                }
+            }
             if (driveMode == DriveMode.Transform)
             {
                 for (int i = 0; i < joints.Length; i++)
