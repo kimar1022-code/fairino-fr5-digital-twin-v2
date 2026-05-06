@@ -33,7 +33,7 @@ namespace RobotControl.EditorTools
 
         private const int IconSize = 40;
 
-        // [MenuItem(MenuPath)] // 의도적 비활성화 - 누르면 사용자 수정값 모두 리셋됨
+        // [MenuItem(MenuPath)] // 의도적 비활성화 - 사용자 수동 수정값 보존을 위해
         public static void Run()
         {
             Undo.SetCurrentGroupName("Build G2 Panels");
