@@ -167,8 +167,8 @@ namespace RobotControl.EditorTools
 
             // 재생 제어 행 (2버튼: PlayPause, Stop)
             var playRow = CreateHorizontalRow(content, "PlayRow", 40);
-            var playPauseBtn = CreateButtonChild(playRow, "PlayPauseButton", "▶ Play");
-            var stopBtn = CreateButtonChild(playRow, "StopButton", "■ Stop", StopButtonColor);
+            var playPauseBtn = CreateButtonChild(playRow, "PlayPauseButton", "Play");
+            var stopBtn = CreateButtonChild(playRow, "StopButton", "Stop", StopButtonColor);
 
             // 진행 표시
             var progressText = CreateTextChild(content, "ProgressText", "0 / 0", 14);
@@ -227,11 +227,11 @@ namespace RobotControl.EditorTools
             // PLC 6 버튼 — 2x3 그리드
             var grid = CreateButtonGrid(content, "ButtonGrid", 3, 2);
             var goHomeBtn = CreateButtonChild(grid, "GoHomeButton", "Go Home");
-            var recordStartBtn = CreateButtonChild(grid, "RecordStartButton", "● Rec Start", StopButtonColor);
+            var recordStartBtn = CreateButtonChild(grid, "RecordStartButton", "Rec Start", StopButtonColor);
             var recordStopBtn = CreateButtonChild(grid, "RecordStopButton", "Rec Stop");
             var saveWpBtn = CreateButtonChild(grid, "SaveWaypointButton", "Save WP");
-            var playBtn = CreateButtonChild(grid, "PlayButton", "▶ Play");
-            var stopBtn = CreateButtonChild(grid, "StopButton", "■ Stop", StopButtonColor);
+            var playBtn = CreateButtonChild(grid, "PlayButton", "Play");
+            var stopBtn = CreateButtonChild(grid, "StopButton", "Stop", StopButtonColor);
 
             // TeachPanel 컴포넌트
             var script = Undo.AddComponent<TeachPanel>(panel);
