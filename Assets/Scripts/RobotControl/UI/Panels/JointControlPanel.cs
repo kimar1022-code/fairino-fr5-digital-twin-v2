@@ -83,17 +83,18 @@ namespace RobotControl
         {
             if (robotManager == null) return;
 
-            if (jointRows != null)
-            {
-                for (int i = 0; i < jointRows.Length; i++)
-                {
-                    JointControlRow row = jointRows[i];
-                    if (row != null && row.Slider != null)
-                    {
-                        row.Slider.SetValueWithoutNotify(robotManager.GetJointAngle(i));
-                    }
-                }
-            }
+            // [DEBUG] 슬라이더 덮어쓰기 임시 비활성화 (Phase 4-A 검증용)
+            // if (jointRows != null)
+            // {
+            //     for (int i = 0; i < jointRows.Length; i++)
+            //     {
+            //         JointControlRow row = jointRows[i];
+            //         if (row != null && row.Slider != null)
+            //         {
+            //             row.Slider.SetValueWithoutNotify(robotManager.GetJointAngle(i));
+            //         }
+            //     }
+            // }
 
             if (jointAngleTexts != null)
             {
