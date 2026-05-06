@@ -96,7 +96,7 @@ namespace RobotControl
         {
             if (recLabel != null)
             {
-                recLabel.text = isRecording ? "● REC" : "REC";
+                recLabel.text = isRecording ? "REC" : "REC";
                 recLabel.color = isRecording ? recOnColor : recOffColor;
             }
             if (recIndicator != null)
