@@ -46,7 +46,7 @@ namespace RobotControl
         public void ChangeMode(Mode newMode)
         {
             mode = newMode;
-            SyncTargets();
+            // SyncTargets()는 의도적 제거 — Mirror 모드 진입 시 자동 명령 금지 (안전 원칙)
         }
 
         /// <summary>
