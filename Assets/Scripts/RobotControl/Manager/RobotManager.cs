@@ -23,7 +23,8 @@ namespace RobotControl
         public FairinoRobotController real;
 
         public event Action<string> OnStatusChanged;
-
+        public void SetModeAuto() { SetMode(RobotMode.Auto); }
+        public void SetModeManual() { SetMode(RobotMode.Manual); }
         IRobotController PrimaryReader
         {
             get

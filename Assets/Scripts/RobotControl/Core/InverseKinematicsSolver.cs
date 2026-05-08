@@ -183,8 +183,25 @@ namespace RobotControl
             {
                 if (joints[i].jointTransform == null) continue;
                 float a = joints[i].invertSign ? -anglesDeg[i] : anglesDeg[i];
+
+                Vector3 axis = joints[i].rotationAxis;
+                if (axis.sqrMagnitude < 0.0001f)
+                {
+                    // rotationAxis 미설정 — ArticulationBody가 있으면 그 회전축 사용
+                    var ab = joints[i].jointTransform.GetComponent<ArticulationBody>();
+                    if (ab != null && ab.jointType == ArticulationJointType.RevoluteJoint)
+                    {
+                        // PhysX RevoluteJoint은 anchor의 X축이 회전축
+                        axis = ab.anchorRotation * Vector3.right;
+                    }
+                    else
+                    {
+                        axis = Vector3.right; // fallback
+                    }
+                }
+
                 joints[i].jointTransform.localRotation = initialLocalRots[i] *
-                    Quaternion.AngleAxis(a, joints[i].rotationAxis);
+                    Quaternion.AngleAxis(a, axis);
             }
         }
 

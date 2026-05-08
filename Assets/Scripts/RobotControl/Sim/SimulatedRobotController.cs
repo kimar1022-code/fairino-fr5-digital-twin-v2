@@ -308,6 +308,7 @@ namespace RobotControl
         // ── 신규: JOG ─────────────────────────────────────────────────
         public void StartCartesianJog(int axis, int dir)
         {
+            Debug.Log($"[Sim] StartCartesianJog axis={axis} dir={dir} ikSolver={(ikSolver != null ? "있음" : "없음")} tcp={(tcpTransform != null ? "있음" : "없음")}");
             StopJog();
             jogAxis = axis;            // 0~5 = X/Y/Z/Rx/Ry/Rz
             jogDir = dir;
@@ -341,6 +342,7 @@ namespace RobotControl
 
                 if (isCartesian)
                 {
+                    Debug.Log($"[Sim.JogLoop] iter axis={jogAxis} dir={jogDir}");
                     // ✅ DLS IK 기반 정확한 Cartesian JOG
                     //    현재 TCP 포즈 → 목표 축 방향으로 한 스텝 이동 → IK로 조인트 해법 계산
                     //    axis: 0=X, 1=Y, 2=Z, 3=Rx, 4=Ry, 5=Rz (로봇 base frame 기준)
@@ -379,6 +381,7 @@ namespace RobotControl
                         else if (axis == 2) localDir = Vector3.up;     // Robot Z → Unity Y
 
                         targetLocalPos += localDir * stepM;
+                        Debug.Log($"[Sim.JogLoop] step (linear) stepMm={stepMm:F4} stepM={stepM:F6}");
                     }
                     else
                     {
@@ -394,18 +397,22 @@ namespace RobotControl
                         Quaternion deltaRot = Quaternion.AngleAxis(stepDeg, localAxis);
                         // 월드 기준 회전 누적: new = delta * current
                         targetLocalRot = deltaRot * currLocalRot;
+                        Debug.Log($"[Sim.JogLoop] step (rotational) stepDeg={stepDeg:F4}");
                     }
 
                     // 목표 포즈를 월드 좌표로 환산
                     Vector3 targetWorldPos = baseTf.TransformPoint(targetLocalPos);
                     Quaternion targetWorldRot = baseTf.rotation * targetLocalRot;
 
+                    Debug.Log($"[Sim.JogLoop] IK 입력: axis={jogAxis} dir={jogDir} targetWorldPos={targetWorldPos}");
                     // IK 풀기
                     float[] newAngles = ikSolver.Solve(currentAngles, targetWorldPos, targetWorldRot);
+                    Debug.Log($"[Sim.JogLoop] IK delta: J1 {currentAngles[0]:F2} → {newAngles[0]:F2}, J2 {currentAngles[1]:F2} → {newAngles[1]:F2}");
 
                     // 결과 적용 — Global Speed에 따라 각 조인트 속도 제한
                     // 각 조인트당 최대 각속도 = 180°/s × speedMul
                     float maxJointVel = 180f * speedMul;
+                    Debug.Log($"[Sim.JogLoop] SetJointTarget 호출 시작");
                     for (int i = 0; i < newAngles.Length; i++)
                     {
                         SetJointTargetRateLimited(i, newAngles[i], maxJointVel, dt);
