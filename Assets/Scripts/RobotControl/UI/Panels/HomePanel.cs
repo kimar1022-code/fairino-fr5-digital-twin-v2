@@ -13,6 +13,7 @@ namespace RobotControl
         [SerializeField] Button saveHomeButton;
         [SerializeField] Button goToHomeButton;
         [SerializeField] TMP_Text homeStatusText;
+        [SerializeField] TMP_Text homeAnglesText;
 
         bool isHomeSaved;
 
@@ -60,6 +61,29 @@ namespace RobotControl
             if (goToHomeButton != null) goToHomeButton.interactable = isHomeSaved;
             if (homeStatusText != null)
                 homeStatusText.text = isHomeSaved ? "Home Saved" : "Home Empty";
+
+            // 홈 각도 표시
+            if (homeAnglesText != null)
+            {
+                if (isHomeSaved)
+                {
+                    float[] home = robotManager.GetHomePose();
+                    if (home != null && home.Length >= 6)
+                    {
+                        homeAnglesText.text =
+                            $"J1: {home[0]:F1}°  J2: {home[1]:F1}°  J3: {home[2]:F1}°\n" +
+                            $"J4: {home[3]:F1}°  J5: {home[4]:F1}°  J6: {home[5]:F1}°";
+                    }
+                    else
+                    {
+                        homeAnglesText.text = "—";
+                    }
+                }
+                else
+                {
+                    homeAnglesText.text = "—";
+                }
+            }
         }
 
         bool HasNonZeroAngle(float[] angles)
