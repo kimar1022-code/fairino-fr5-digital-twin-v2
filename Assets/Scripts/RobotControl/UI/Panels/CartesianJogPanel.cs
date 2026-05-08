@@ -34,6 +34,7 @@ namespace RobotControl
 
         void HandleJogStart(int axis, int dir)
         {
+            Debug.Log($"[CartJog] HandleJogStart axis={axis} dir={dir}");
             if (robotManager == null) return;
             robotManager.StartCartesianJog(axis, dir);
         }

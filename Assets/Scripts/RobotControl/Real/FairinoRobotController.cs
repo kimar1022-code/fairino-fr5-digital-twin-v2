@@ -66,7 +66,7 @@ namespace RobotControl
         private float targetGripperPercent = 0f;
         private bool gripperDirty = false;
 
-        private RobotMode _mode = RobotMode.Manual;
+        private RobotMode _mode = RobotMode.Auto;
         private int _globalSpeed = 50;
 
         // JOG 명령 큐 (메인 → 워커로 전달)

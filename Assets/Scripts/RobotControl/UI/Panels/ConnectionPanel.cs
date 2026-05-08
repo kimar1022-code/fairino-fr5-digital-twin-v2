@@ -49,12 +49,23 @@ namespace RobotControl
 
         void OnConnectClick()
         {
+            Debug.Log("[ConnectionPanel] OnConnectClick 호출됨");
+            if (robotManager == null)
+            {
+                Debug.LogError("[ConnectionPanel] robotManager가 null!");
+                return;
+            }
+            Debug.Log($"[ConnectionPanel] robotManager.Connect() 호출 직전. mode={robotManager}");
             robotManager.Connect();
+            Debug.Log("[ConnectionPanel] Connect() 호출 완료");
         }
 
         void OnDisconnectClick()
         {
+            Debug.Log("[ConnectionPanel] OnDisconnectClick 호출됨");
+            if (robotManager == null) return;
             robotManager.Disconnect();
+            Debug.Log("[ConnectionPanel] Disconnect() 호출 완료");
         }
 
         void OnDestroy()
