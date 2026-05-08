@@ -15,9 +15,10 @@ namespace RobotControl
         [SerializeField] Button stepMinusButton;
         [SerializeField] Button stepPlusButton;
         [SerializeField] private TMP_Text stepValueText;
+        [SerializeField] private TMP_InputField stepValueInput;
 
-        [Header("각도 표시 (6개)")]
-        [SerializeField] private TMP_Text[] jointAngleTexts;
+        [Header("각도 입력 (6개)")]
+        [SerializeField] private TMP_InputField[] jointAngleInputs;
 
         void Start()
         {
@@ -89,7 +90,16 @@ namespace RobotControl
             target = Mathf.Clamp(target, robotManager.GetJointMinAngle(idx), robotManager.GetJointMaxAngle(idx));
             robotManager.SetJointTarget(idx, target);
         }
-
+        
+        void OnStepInputEndEdit(string text)
+        {
+            if (stepSlider == null) return;
+            if (float.TryParse(text, out float value))
+            {
+                value = Mathf.Clamp(value, 1f, 90f);
+                stepSlider.value = value;
+            }
+        }
         void Update()
         {
             if (robotManager == null) return;
@@ -107,20 +117,29 @@ namespace RobotControl
             //     }
             // }
 
-            if (jointAngleTexts != null)
+            if (jointAngleInputs != null && jointRows != null)
             {
-                for (int i = 0; i < jointAngleTexts.Length; i++)
+                for (int i = 0; i < jointAngleInputs.Length; i++)
                 {
-                    if (jointAngleTexts[i] != null)
-                    {
-                        jointAngleTexts[i].text = $"{robotManager.GetJointAngle(i):F1}";
-                    }
+                    if (jointAngleInputs[i] == null) continue;
+
+                    // 사용자가 InputField에 입력 중이면 덮어쓰지 않음
+                    if (jointAngleInputs[i].isFocused) continue;
+
+                    jointAngleInputs[i].text = $"{robotManager.GetJointAngle(i):F1}";
                 }
             }
 
-            if (stepValueText != null && stepSlider != null)
+            if (stepSlider != null)
             {
-                stepValueText.text = $"Step: {stepSlider.value:F0}°";
+                if (stepValueText != null)
+                {
+                    stepValueText.text = $"Step: {stepSlider.value:F0}°";
+                }
+                if (stepValueInput != null && !stepValueInput.isFocused)
+                {
+                    stepValueInput.text = $"{stepSlider.value:F0}";
+                }
             }
         }
 
@@ -135,6 +154,7 @@ namespace RobotControl
                 row.OnMinusClicked -= HandleMinusClicked;
                 row.OnPlusClicked -= HandlePlusClicked;
             }
+            if (stepValueInput != null) stepValueInput.onEndEdit.RemoveAllListeners();
         }
     }
 }
