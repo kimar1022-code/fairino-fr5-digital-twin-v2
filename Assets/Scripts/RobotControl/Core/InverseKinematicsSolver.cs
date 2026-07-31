@@ -27,10 +27,10 @@ namespace RobotControl
     {
         // ── 설정 파라미터 ────────────────────────────────────────────
         /// <summary>DLS 감쇠 상수. 클수록 안정적이지만 수렴 느림. 0.05~0.3 권장.</summary>
-        public float damping = 0.1f;
+        public float damping = 0.5f;
 
         /// <summary>한 번의 Solve 호출당 최대 반복 횟수.</summary>
-        public int maxIterations = 10;
+        public int maxIterations = 5;
 
         /// <summary>위치 에러 허용치 (m). 이 이하로 떨어지면 수렴으로 간주.</summary>
         public float positionTolerance = 0.001f;   // 1mm
@@ -42,7 +42,7 @@ namespace RobotControl
         public float jacobianDelta = 0.001f;
 
         /// <summary>조인트 업데이트 최대 스텝 크기 (rad). 큰 에러에서 발산 방지.</summary>
-        public float maxStepRad = 0.2f;            // 약 11.5도
+        public float maxStepRad = 0.05f;            // 약 11.5도
 
         // ── 내부 ─────────────────────────────────────────────────────
         private readonly JointConfig[] joints;

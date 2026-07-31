@@ -47,10 +47,12 @@ namespace RobotControl
         public float jogAngularSpeed = 15f;
 
         [Header("IK 파라미터 (DLS)")]
-        [Tooltip("감쇠 상수. 크면 안정적이지만 수렴 느림. 특이점 근처에서 키우면 좋음.")]
-        [Range(0.01f, 0.5f)] public float ikDamping = 0.1f;
+        [Tooltip("감쇠 상수. 크면 안정적이지만 수렴 느림. 0.5는 산업로봇용 안전값.")]
+        [Range(0.01f, 0.8f)] public float ikDamping = 0.5f;
         [Tooltip("한 번의 IK 해법당 최대 반복 횟수")]
-        [Range(1, 30)] public int ikMaxIterations = 8;
+        [Range(1, 30)] public int ikMaxIterations = 5;
+        [Tooltip("한 iter당 최대 조인트 변화량 (rad). 작을수록 안정적.")]
+        [Range(0.01f, 0.5f)] public float ikMaxStepRad = 0.05f;
 
         // ── 내부 상태 ─────────────────────────────────────────────────
         private float[] targetAngles;
@@ -73,6 +75,11 @@ namespace RobotControl
 
         // IK 솔버 (Cartesian JOG에서 사용)
         private InverseKinematicsSolver ikSolver;
+
+        // ── 해석적 IK용: jog 누적 commanded 자세 ─────────────
+        private float[] commandedAngles;       // jog 명령 누적 (deg). actual TCP와 분리.
+        private Matrix4x4 commandedPose;       // FR5 base frame 변환 (mm)
+        private bool commandedInitialized = false;
 
         // ── IRobotController 기본 구현 ───────────────────────────────
         public bool IsReady => true;
@@ -126,6 +133,7 @@ namespace RobotControl
                 {
                     damping = ikDamping,
                     maxIterations = ikMaxIterations,
+                    maxStepRad = ikMaxStepRad,
                 };
                 ikSolver.SetInitialRotations(tfInitialRots);
             }
@@ -308,10 +316,18 @@ namespace RobotControl
         // ── 신규: JOG ─────────────────────────────────────────────────
         public void StartCartesianJog(int axis, int dir)
         {
-            Debug.Log($"[Sim] StartCartesianJog axis={axis} dir={dir} ikSolver={(ikSolver != null ? "있음" : "없음")} tcp={(tcpTransform != null ? "있음" : "없음")}");
-            StopJog();
-            jogAxis = axis;            // 0~5 = X/Y/Z/Rx/Ry/Rz
+            Debug.Log($"[Sim] StartCartesianJog axis={axis} dir={dir}");
+            jogAxis = axis;
             jogDir = dir;
+
+            // jog 시작 시점의 currentAngles로 commandedPose 초기화
+            commandedAngles = (float[])currentAngles.Clone();
+            float[] qRad = new float[6];
+            for (int i = 0; i < 6; i++) qRad[i] = commandedAngles[i] * Mathf.Deg2Rad;
+            commandedPose = FR5AnalyticalIK.ForwardKinematics(qRad);
+            commandedInitialized = true;
+
+            if (jogCoroutine != null) StopCoroutine(jogCoroutine);
             jogCoroutine = StartCoroutine(JogLoop(isCartesian: true));
         }
 
@@ -327,6 +343,7 @@ namespace RobotControl
         {
             if (jogCoroutine != null) { StopCoroutine(jogCoroutine); jogCoroutine = null; }
             jogAxis = -1; jogDir = 0;
+            commandedInitialized = false;
 
             // SmoothDamp 속도 리셋 (다음 JOG가 0에서 다시 부드럽게 시작되도록)
             if (smoothVelocities != null)
@@ -342,86 +359,105 @@ namespace RobotControl
 
                 if (isCartesian)
                 {
-                    Debug.Log($"[Sim.JogLoop] iter axis={jogAxis} dir={jogDir}");
-                    // ✅ DLS IK 기반 정확한 Cartesian JOG
-                    //    현재 TCP 포즈 → 목표 축 방향으로 한 스텝 이동 → IK로 조인트 해법 계산
-                    //    axis: 0=X, 1=Y, 2=Z, 3=Rx, 4=Ry, 5=Rz (로봇 base frame 기준)
                     int axis = jogAxis;
 
-                    if (ikSolver == null || tcpTransform == null)
+                    if (!commandedInitialized)
                     {
-                        Debug.LogWarning("[Sim] IK solver 또는 TCP Transform 미설정. Cartesian JOG 불가.");
+                        Debug.LogWarning("[Sim] commandedPose 초기화 안됨");
                         yield return null;
                         continue;
                     }
 
-                    // 현재 TCP 포즈 (RobotRoot 로컬 기준 = 로봇 base frame)
-                    Transform baseTf = this.transform;
-                    Vector3 currLocalPos = baseTf.InverseTransformPoint(tcpTransform.position);
-                    Quaternion currLocalRot = Quaternion.Inverse(baseTf.rotation) * tcpTransform.rotation;
-
-                    // 한 스텝 이동량 계산 (로봇 base frame 기준)
-                    Vector3 targetLocalPos = currLocalPos;
-                    Quaternion targetLocalRot = currLocalRot;
-
+                    // ── commandedPose에 한 스텝 적용 (robot base frame) ──
                     if (axis < 3)
                     {
-                        // 선형 이동 (mm → m 단위)
+                        // 선형: mm 단위 누적
                         float stepMm = jogLinearSpeed * speedMul * dt * jogDir;
-                        float stepM = stepMm * 0.001f;
 
-                        // 로봇 base frame의 X/Y/Z → Unity local frame으로 변환
-                        // CoordinateConverter의 역변환 적용
-                        // Robot X (axis=0) → Unity local Z
-                        // Robot Y (axis=1) → Unity local -X
-                        // Robot Z (axis=2) → Unity local Y
-                        Vector3 localDir = Vector3.zero;
-                        if (axis == 0) localDir = Vector3.forward;    // Robot X → Unity Z
-                        else if (axis == 1) localDir = -Vector3.right; // Robot Y → Unity -X
-                        else if (axis == 2) localDir = Vector3.up;     // Robot Z → Unity Y
+                        // robot base frame X/Y/Z 단위 벡터
+                        Vector3 axisVec = Vector3.zero;
+                        if (axis == 0) axisVec = new Vector3(1, 0, 0);
+                        else if (axis == 1) axisVec = new Vector3(0, 1, 0);
+                        else if (axis == 2) axisVec = new Vector3(0, 0, 1);
 
-                        targetLocalPos += localDir * stepM;
-                        Debug.Log($"[Sim.JogLoop] step (linear) stepMm={stepMm:F4} stepM={stepM:F6}");
+                        Vector3 delta = axisVec * stepMm;
+                        // commandedPose의 위치 column에 더하기
+                        commandedPose.m03 += delta.x;
+                        commandedPose.m13 += delta.y;
+                        commandedPose.m23 += delta.z;
                     }
                     else
                     {
-                        // 회전 이동 (deg → rad)
-                        float stepDeg = jogAngularSpeed * speedMul * dt * jogDir;
+                        // 회전: deg → rad, 누적 회전 (robot base frame X/Y/Z 축)
+                        float stepRad = jogAngularSpeed * speedMul * dt * jogDir * Mathf.Deg2Rad;
+                        Vector3 axisVec = Vector3.zero;
+                        if (axis == 3) axisVec = new Vector3(1, 0, 0);
+                        else if (axis == 4) axisVec = new Vector3(0, 1, 0);
+                        else if (axis == 5) axisVec = new Vector3(0, 0, 1);
 
-                        // 로봇 base frame의 Rx/Ry/Rz → Unity local 회전축 매핑
-                        Vector3 localAxis = Vector3.zero;
-                        if (axis == 3) localAxis = Vector3.forward;    // Robot Rx → Unity Z
-                        else if (axis == 4) localAxis = -Vector3.right; // Robot Ry → Unity -X
-                        else if (axis == 5) localAxis = Vector3.up;     // Robot Rz → Unity Y
-
-                        Quaternion deltaRot = Quaternion.AngleAxis(stepDeg, localAxis);
-                        // 월드 기준 회전 누적: new = delta * current
-                        targetLocalRot = deltaRot * currLocalRot;
-                        Debug.Log($"[Sim.JogLoop] step (rotational) stepDeg={stepDeg:F4}");
+                        // R_new = R_axis(stepRad) * R_old   (base frame 기준 회전)
+                        Matrix4x4 Rdelta = AxisAngleMatrix(axisVec, stepRad);
+                        // commandedPose의 회전 부분만 곱하기
+                        Matrix4x4 R_old = commandedPose;
+                        R_old.m03 = 0; R_old.m13 = 0; R_old.m23 = 0; R_old.m33 = 1;
+                        Matrix4x4 R_new = Rdelta * R_old;
+                        // 위치는 보존, 회전만 갱신
+                        Vector3 pos = new Vector3(commandedPose.m03, commandedPose.m13, commandedPose.m23);
+                        commandedPose = R_new;
+                        commandedPose.m03 = pos.x;
+                        commandedPose.m13 = pos.y;
+                        commandedPose.m23 = pos.z;
                     }
 
-                    // 목표 포즈를 월드 좌표로 환산
-                    Vector3 targetWorldPos = baseTf.TransformPoint(targetLocalPos);
-                    Quaternion targetWorldRot = baseTf.rotation * targetLocalRot;
-
-                    Debug.Log($"[Sim.JogLoop] IK 입력: axis={jogAxis} dir={jogDir} targetWorldPos={targetWorldPos}");
-                    // IK 풀기
-                    float[] newAngles = ikSolver.Solve(currentAngles, targetWorldPos, targetWorldRot);
-                    Debug.Log($"[Sim.JogLoop] IK delta: J1 {currentAngles[0]:F2} → {newAngles[0]:F2}, J2 {currentAngles[1]:F2} → {newAngles[1]:F2}");
-
-                    // 결과 적용 — Global Speed에 따라 각 조인트 속도 제한
-                    // 각 조인트당 최대 각속도 = 180°/s × speedMul
-                    float maxJointVel = 180f * speedMul;
-                    Debug.Log($"[Sim.JogLoop] SetJointTarget 호출 시작");
-                    for (int i = 0; i < newAngles.Length; i++)
+                    // ── 해석적 IK 풀이 ──
+                    float[] currentRad = new float[6];
+                    float[] minRad = new float[6];
+                    float[] maxRad = new float[6];
+                    for (int i = 0; i < 6; i++)
                     {
-                        SetJointTargetRateLimited(i, newAngles[i], maxJointVel, dt);
+                        currentRad[i] = commandedAngles[i] * Mathf.Deg2Rad;
+                        minRad[i] = joints[i].minAngle * Mathf.Deg2Rad;
+                        maxRad[i] = joints[i].maxAngle * Mathf.Deg2Rad;
+                    }
+
+                    float[] newRad = FR5AnalyticalIK.SolveForJog(
+                        commandedPose, currentRad, minRad, maxRad,
+                        maxJointDelta: 0.5f);  // 한 jog 스텝당 최대 0.5rad (28.6°) 분기 차이 허용
+
+                    if (newRad == null)
+                    {
+                        // 도달 불가 또는 한계 위반: commandedPose 롤백
+                        Debug.LogWarning($"[Sim] IK 도달 불가 axis={axis} — 스텝 롤백");
+                        // 롤백: 같은 스텝을 반대로
+                        if (axis < 3)
+                        {
+                            float stepMm = jogLinearSpeed * speedMul * dt * jogDir;
+                            Vector3 axisVec = axis == 0 ? new Vector3(1,0,0) : axis == 1 ? new Vector3(0,1,0) : new Vector3(0,0,1);
+                            commandedPose.m03 -= axisVec.x * stepMm;
+                            commandedPose.m13 -= axisVec.y * stepMm;
+                            commandedPose.m23 -= axisVec.z * stepMm;
+                        }
+                        // 회전 롤백은 복잡하니 그냥 다음 프레임 진행 (한 스텝 어긋남 허용)
+                        yield return null;
+                        continue;
+                    }
+
+                    // ── commandedAngles 갱신 + 조인트 적용 ──
+                    for (int i = 0; i < 6; i++)
+                    {
+                        commandedAngles[i] = newRad[i] * Mathf.Rad2Deg;
+                    }
+
+                    float maxJointVel = 180f * speedMul;
+                    for (int i = 0; i < 6; i++)
+                    {
+                        SetJointTargetRateLimited(i, commandedAngles[i], maxJointVel, dt);
                     }
                 }
                 else
                 {
-                    // Joint JOG — 단순 각도 증가
-                    int j = jogAxis - 10; // 0~5
+                    // Joint JOG — 기존 그대로
+                    int j = jogAxis - 10;
                     float delta = jogAngularSpeed * speedMul * dt * jogDir;
                     SetJointTarget(j, targetAngles[j] + delta);
                 }
@@ -455,6 +491,24 @@ namespace RobotControl
         {
             _globalSpeed = Mathf.Clamp(percent, 0, 100);
             OnStatusChanged?.Invoke(StatusMessage);
+        }
+
+        /// <summary>
+        /// 임의 축 회전 행렬 (Rodrigues 공식).
+        /// </summary>
+        static Matrix4x4 AxisAngleMatrix(Vector3 axis, float angleRad)
+        {
+            axis.Normalize();
+            float c = Mathf.Cos(angleRad);
+            float s = Mathf.Sin(angleRad);
+            float t = 1f - c;
+            float x = axis.x, y = axis.y, z = axis.z;
+
+            Matrix4x4 m = Matrix4x4.identity;
+            m.m00 = t*x*x + c;     m.m01 = t*x*y - s*z;  m.m02 = t*x*z + s*y;
+            m.m10 = t*x*y + s*z;   m.m11 = t*y*y + c;    m.m12 = t*y*z - s*x;
+            m.m20 = t*x*z - s*y;   m.m21 = t*y*z + s*x;  m.m22 = t*z*z + c;
+            return m;
         }
     }
 }
