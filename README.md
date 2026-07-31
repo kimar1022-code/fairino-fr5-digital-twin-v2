@@ -117,6 +117,16 @@ Unity 6000.4.3f1 + URDF Importer 패키지, 로봇은 티치펜던트 Auto 모�
 
 네트워크는 로봇 `192.168.58.2` / PC `192.168.58.100` / 서브넷 `255.255.255.0` 기준입니다.
 
+### UI 아이콘 에셋 (선택)
+
+용량 문제로 `Assets/CleanFlatIcon/`은 저장소에서 제외했습니다(`.gitignore`). 클론 직후에는
+UI 버튼 아이콘 25개가 빈 사각형으로 표시됩니다. **로봇 동작에는 영향이 없습니다** — 씬의 참조는
+전부 `Image.m_Sprite` 필드이고 스크립트가 스프라이트를 역참조하는 곳이 없어, 버튼 클릭·IK·JOG·
+Mirror 동기화 모두 정상 동작합니다.
+
+아이콘까지 복원하려면 Asset Store에서 CleanFlatIcon을 받아 `Assets/CleanFlatIcon/`에 풀면 됩니다.
+씬은 GUID로 참조하므로 경로만 맞으면 자동으로 다시 연결됩니다.
+
 ## 트러블슈팅
 
 v1에서 해결한 이슈는 [v1 README](https://github.com/kimar1022-code/fairino-fr5-digital-twin#트러블슈팅) 참고.
