@@ -5967,42 +5967,42 @@ MonoBehaviour:
     maxAngle: 175
     homeAngle: -90
     jointTransform: {fileID: 1165505915}
-    rotationAxis: {x: 1, y: 0, z: 0}
+    rotationAxis: {x: 0, y: -1, z: 0}
     invertSign: 0
   - name: J2 (Shoulder)
     minAngle: -265
     maxAngle: 85
     homeAngle: -90
     jointTransform: {fileID: 1721273272}
-    rotationAxis: {x: 1, y: 0, z: 0}
+    rotationAxis: {x: 0, y: -1, z: 0}
     invertSign: 0
   - name: J3 (Elbow)
     minAngle: -162
     maxAngle: 162
     homeAngle: 90
     jointTransform: {fileID: 1283629475}
-    rotationAxis: {x: 1, y: 0, z: 0}
+    rotationAxis: {x: 0, y: -1, z: 0}
     invertSign: 0
   - name: J4 (Wrist1)
     minAngle: -265
     maxAngle: 85
     homeAngle: -90
     jointTransform: {fileID: 478575096}
-    rotationAxis: {x: 1, y: 0, z: 0}
+    rotationAxis: {x: 0, y: -1, z: 0}
     invertSign: 0
   - name: J5 (Wrist2)
     minAngle: -175
     maxAngle: 175
     homeAngle: -90
     jointTransform: {fileID: 461545167}
-    rotationAxis: {x: 1, y: 0, z: 0}
+    rotationAxis: {x: 0, y: -1, z: 0}
     invertSign: 0
   - name: J6 (Wrist3)
     minAngle: -175
     maxAngle: 175
     homeAngle: 0
     jointTransform: {fileID: 1962454354}
-    rotationAxis: {x: 1, y: 0, z: 0}
+    rotationAxis: {x: 0, y: -1, z: 0}
     invertSign: 0
   stiffness: 5000
   damping: 2000
@@ -6010,10 +6010,11 @@ MonoBehaviour:
   transformSmoothSpeed: 180
   gripper: {fileID: 1190896750}
   tcpTransform: {fileID: 486077195}
-  jogLinearSpeed: 50
-  jogAngularSpeed: 15
-  ikDamping: 0.1
-  ikMaxIterations: 8
+  jogLinearSpeed: 200
+  jogAngularSpeed: 45
+  ikDamping: 0.5
+  ikMaxIterations: 5
+  ikMaxStepRad: 0.05
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
