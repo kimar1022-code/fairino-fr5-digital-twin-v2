@@ -128,7 +128,7 @@ v1에서 해결한 이슈는 [v1 README](https://github.com/kimar1022-code/fairi
 - [x] 16개 UI 패널 + TeachModeManager (컴파일 에러·경고 0)
 - [x] 씬 구성 — GameObject 배치 + Inspector 연결 (`Assets/Scenes/FR5_Project.unity`)
 - [x] 해석해 IK + `commandedPose` 누적 방식 Cartesian JOG
-- [ ] 실로봇 연결 테스트 + Mirror 모드 검증
+- [x] 실로봇 연결 테스트 + Mirror 모드 검증
 - [ ] WaypointStorage 영구 저장(JSON)
 - [ ] 시연 영상
 
