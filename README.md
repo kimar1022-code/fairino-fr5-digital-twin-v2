@@ -37,6 +37,14 @@ UI를 16개 독립 패널로 모듈화하고, 실로봇 PLC 티칭 흐름을 재
 - WaypointPlayer: Play / Pause / Resume / Stop 재생 제어 + 4개 이벤트 발행
 - TeachPanel: 실로봇 PLC의 물리버튼 6개(Go Home / Record Start·Stop / Save Waypoint / Play / Stop)를 UI로 재현
 
+해석해 IK (신규) — `AnalyticalIKSolver`
+- FR5의 DH 파라미터로 정기구학·역기구학을 닫힌 형태로 계산 (`ForwardKinematics`, `InverseKinematics`)
+- `InverseKinematics`는 가능한 해 분기를 모두 반환하고, `SelectClosest`가 현재 자세에 가장 가까운 해를 선택
+- Cartesian JOG는 실제 TCP를 매 프레임 다시 읽지 않고 `commandedPose`(base frame, mm)에 누적
+  → 드라이브 지연이 목표에 되먹임되지 않음. 도달 불가 시 해당 스텝을 롤백
+- 기존 DLS 솔버(`InverseKinematicsSolver`)는 폴백으로 남기고 감쇠·스텝을 보수적으로 조정
+  (damping 0.1→0.5, maxIterations 10→5, maxStepRad 0.2→0.05)
+
 그리퍼·홈 포즈
 - 0~100% 개폐 + 속도/힘 조절 (Fairino DH 그리퍼)
 - 홈 포즈 저장/복귀 (v1의 3개 Pose Slot은 단순화하며 제거)
@@ -57,7 +65,7 @@ flowchart TD
     Player[WaypointPlayer]
     Sim[SimulatedRobotController<br/>Unity ArticulationBody]
     Real[FairinoRobotController<br/>FR5 SDK Wrapper]
-    IK[InverseKinematicsSolver<br/>DLS Jacobian]
+    IK[AnalyticalIKSolver<br/>FR5 DH 해석해<br/>DLS는 폴백]
     Robot[(Fairino FR5<br/>192.168.58.2)]
 
     G1 --> Mgr
@@ -89,7 +97,12 @@ flowchart TD
 ```
 fairino-fr5-digital-twin-v2/
 ├── Assets/Scripts/RobotControl/
-│   ├── Core/          # 코어 11개 클래스 (RobotManager, IK 솔버, Sim/Real 컨트롤러 등)
+│   ├── Core/          # 공통 타입·IK 솔버 (IRobotController, JointConfig, CoordinateConverter,
+│   │                  #   GripperController, InverseKinematicsSolver, AnalyticalIKSolver)
+│   ├── Manager/       # RobotManager
+│   ├── Sim/           # SimulatedRobotController
+│   ├── Real/          # FairinoRobotController
+│   ├── Calibration/   # 좌표·조인트 캘리브레이터 3종
 │   ├── PLC/           # PLCButtonHandler, Waypoint, WaypointRecorder
 │   ├── Teach/         # TeachModeManager, WaypointPlayer, WaypointStorage
 │   └── UI/Panels/     # 16개 모듈 패널
@@ -113,8 +126,9 @@ v1에서 해결한 이슈는 [v1 README](https://github.com/kimar1022-code/fairi
 
 - [x] 코어 시스템 + URDF 임포트 + Sim/Real 인터페이스 (v1 계승)
 - [x] 16개 UI 패널 + TeachModeManager (컴파일 에러·경고 0)
-- [ ] 씬 구성 — GameObject 배치 + Inspector 연결
-- [ ] 실로봇 연결 테스트 + Mirror 모드 검증
+- [x] 씬 구성 — GameObject 배치 + Inspector 연결 (`Assets/Scenes/FR5_Project.unity`)
+- [x] 해석해 IK + `commandedPose` 누적 방식 Cartesian JOG
+- [x] 실로봇 연결 테스트 + Mirror 모드 검증
 - [ ] WaypointStorage 영구 저장(JSON)
 - [ ] 시연 영상
 
