@@ -11,7 +11,7 @@ UI를 16개 독립 패널로 모듈화하고, 실로봇 PLC 티칭 흐름을 재
 모든 UI를 자동 생성하는 모놀리식 구조였습니다. 초기 검증에는 충분했지만, 클래스가 커질수록
 수정 한 번에 영향 범위를 가늠하기 어려워져 v2에서 책임별 패널 구조로 재설계했습니다.
 
-| 항목 <img src="docs/images/layout/w100.png" width="100%" height="1"> | 사양 <img src="docs/images/layout/w300.png" width="100%" height="1"> |
+| 항목 <img src="docs/images/layout/w600.png" width="100%" height="1"> | 사양 <img src="docs/images/layout/w2400.png" width="100%" height="1"> |
 |---|---|
 | 로봇 모델 | Fairino FR5 (6-DOF 협동로봇) |
 | Unity 버전 | 6000.4.3f1 (URP) |
