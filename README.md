@@ -18,24 +18,24 @@ UI를 16개 독립 패널로 모듈화하고, 실로봇 PLC 티칭 흐름을 재
 | 언어 | C# (.NET Framework) |
 | SDK | Fairino C# SDK (XML-RPC, libfairino.dll) |
 | 통신 | Ethernet (192.168.58.2) |
-| 개발 기간 | 2026– |
+| 개발 기간 | 2026–06 ~ 2026-07 |
 
 ## 기능
 
 모드 시스템 (v1 대비 단순화)
-- SIM: 시뮬레이션 단독 (실로봇 없이 테스트)
-- MIRROR: 시뮬 + 실로봇 동시 동기화 (Sim이 Real을 매 프레임 추종)
+- SIM : 시뮬레이션 단독 (실로봇 없이 테스트)
+- MIRROR : 시뮬 + 실로봇 동시 동기화 (Sim이 Real을 매 프레임 추종)
 - v1의 REAL 단독 모드는 안전성 우선 정책으로 제거
 
 모듈화된 16개 UI 패널 - v1의 단일 `RobotControlUI`를 책임별 독립 패널로 재구성
-- 상태 표시 (G1): StatusPanel, ConnectionPanel, ModePanel, SpeedPanel
+- 상태 표시 (G1) : StatusPanel, ConnectionPanel, ModePanel, SpeedPanel
 - 제어 (G2): HomePanel, StopPanel, GripperPanel, CartesianControlPanel, ControlModePanel, CartesianJogPanel, JointControlPanel + 보조 컴포넌트 2개
-- 녹화 · 재생 (G3): WaypointItem, WaypointPanel, TeachPanel
+- 녹화 · 재생 (G3) : WaypointItem, WaypointPanel, TeachPanel
 
 웨이포인트 녹화 & PLC 시뮬레이션 (신규)
-- WaypointRecorder: 현재 자세(조인트 6 + TCP 6 + 그리퍼)를 리스트로 누적 저장
-- WaypointPlayer: Play / Pause / Resume / Stop 재생 제어 + 4개 이벤트 발행
-- TeachPanel: 실로봇 PLC의 물리버튼 6개(Go Home / Record Start · Stop / Save Waypoint / Play / Stop)를 UI로 재현
+- WaypointRecorder : 현재 자세(조인트 6 + TCP 6 + 그리퍼)를 리스트로 누적 저장
+- WaypointPlayer : Play / Pause / Resume / Stop 재생 제어 + 4개 이벤트 발행
+- TeachPanel : 실로봇 PLC의 물리버튼 6개(Go Home / Record Start · Stop / Save Waypoint / Play / Stop)를 UI로 재현
 
 해석해 IK (신규) - `AnalyticalIKSolver`
 - FR5의 DH 파라미터로 정기구학 · 역기구학을 닫힌 형태로 계산 (`ForwardKinematics`, `InverseKinematics`)
@@ -43,10 +43,10 @@ UI를 16개 독립 패널로 모듈화하고, 실로봇 PLC 티칭 흐름을 재
 - Cartesian JOG는 실제 TCP를 매 프레임 다시 읽지 않고 `commandedPose`(base frame, mm)에 누적
   → 드라이브 지연이 목표에 되먹임되지 않음. 도달 불가 시 해당 스텝을 롤백
 - 기존 DLS 솔버(`InverseKinematicsSolver`)는 폴백으로 남기고 감쇠 · 스텝을 보수적으로 조정
-  (damping 0.1→0.5, maxIterations 10→5, maxStepRad 0.2→0.05)
+  (damping 0.1 → 0.5, maxIterations 10→5, maxStepRad 0.2 → 0.05)
 
 그리퍼 · 홈 포즈
-- 0~100% 개폐 + 속도/힘 조절 (Fairino DH 그리퍼)
+- 0 ~ 100% 개폐 + 속도/힘 조절 (Fairino DH 그리퍼)
 - 홈 포즈 저장/복귀 (v1의 3개 Pose Slot은 단순화하며 제거)
 
 ## 구조
