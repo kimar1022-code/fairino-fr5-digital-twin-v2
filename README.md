@@ -51,39 +51,7 @@ UI를 16개 독립 패널로 모듈화하고, 실로봇 PLC 티칭 흐름을 재
 
 ## 구조
 
-```mermaid
-flowchart TD
-    subgraph Panels["UI 패널 16개 (모듈화)"]
-        G1[G1: 상태 표시 4개]
-        G2[G2: 제어 9개]
-        G3[G3: 녹화 · 재생 3개]
-    end
-
-    Mgr[RobotManager<br/>Mode: Sim/Mirror]
-    Teach[TeachModeManager<br/>PLC 진입점 6개]
-    Rec[WaypointRecorder]
-    Player[WaypointPlayer]
-    Sim[SimulatedRobotController<br/>Unity ArticulationBody]
-    Real[FairinoRobotController<br/>FR5 SDK Wrapper]
-    IK[AnalyticalIKSolver<br/>FR5 DH 해석해<br/>DLS는 폴백]
-    Robot[(Fairino FR5<br/>192.168.58.2)]
-
-    G1 --> Mgr
-    G2 --> Mgr
-    G3 --> Teach
-    G3 --> Player
-    Teach --> Rec
-    Teach --> Player
-    Player --> Mgr
-    Rec --> Mgr
-
-    Mgr -->|SIM| Sim
-    Mgr -->|MIRROR| Sim
-    Mgr -->|MIRROR| Real
-    Sim --> IK
-    Real <-->|"XML-RPC Port 20003<br/>명령 / Joint Feedback"| Robot
-    Real -.->|Mirror Sync| Sim
-```
+<img src="docs/images/architecture.png" alt="디지털 트윈 v2 구성도" width="100%" />
 
 설계 원칙 세 가지를 지켰습니다.
 
