@@ -81,8 +81,7 @@ flowchart TD
     Mgr -->|MIRROR| Sim
     Mgr -->|MIRROR| Real
     Sim --> IK
-    Real -->|XML-RPC<br/>Port 20003| Robot
-    Robot -.->|Joint Feedback| Real
+    Real <-->|"XML-RPC Port 20003<br/>명령 / Joint Feedback"| Robot
     Real -.->|Mirror Sync| Sim
 ```
 
